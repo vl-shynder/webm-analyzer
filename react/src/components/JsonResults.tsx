@@ -15,7 +15,8 @@ const JsonResults: React.FC<JsonResultsProps> = ({ results }) => {
     <div
       style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}
     >
-      {Object.entries(results).map(([path, result], index) => (
+      {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+      {Object.entries(results).map(([_, result], index) => (
         <div
           key={index}
           style={{
