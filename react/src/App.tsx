@@ -1,12 +1,18 @@
 import { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import JsonResults, { JsonResult } from "./components/JsonResults";
 import { ValidationResult, WebMAnalyzer } from "./webm-analyzer";
 
 function App() {
   const [validationResults, setValidationResults] = useState<
     ValidationResult[]
   >([]);
+  const [jsonResults, setJsonResults] = useState<Record<
+    string,
+    JsonResult
+  > | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
   const analyzer = new WebMAnalyzer();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -32,6 +38,22 @@ function App() {
     },
     noClick: true, // Disable click to open file dialog
   });
+
+  const handleJsonFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        setJsonResults(json);
+        setValidationResults([]); // Clear individual results
+      } catch (error) {
+        console.error("Error reading JSON file:", error);
+      }
+    }
+  };
 
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
@@ -76,7 +98,15 @@ function App() {
           minHeight: "100vh",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "20px",
+            display: "flex",
+            gap: "10px",
+            justifyContent: "center",
+          }}
+        >
           <button
             onClick={() => fileInputRef.current?.click()}
             style={{
@@ -90,6 +120,19 @@ function App() {
           >
             Select WebM files
           </button>
+          <button
+            onClick={() => jsonInputRef.current?.click()}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#333",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              cursor: "pointer",
+              color: "#fff",
+            }}
+          >
+            Load JSON Results
+          </button>
           <input
             type="file"
             ref={fileInputRef}
@@ -100,6 +143,13 @@ function App() {
             }}
             accept=".webm"
             multiple
+            style={{ display: "none" }}
+          />
+          <input
+            type="file"
+            ref={jsonInputRef}
+            onChange={handleJsonFileSelect}
+            accept=".json"
             style={{ display: "none" }}
           />
         </div>
@@ -144,6 +194,27 @@ function App() {
             >
               Reset
             </button>
+          </>
+        )}
+
+        {jsonResults && (
+          <>
+            <JsonResults results={jsonResults} />
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <button
+                onClick={() => setJsonResults(null)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#333",
+                  border: "1px solid #444",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  color: "#fff",
+                }}
+              >
+                Reset JSON Results
+              </button>
+            </div>
           </>
         )}
       </div>
